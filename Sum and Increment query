@@ -1,0 +1,80 @@
+#include<bits/stdc++.h>
+#include<iostream>
+using namespace std;
+//sum and increment query both can be done in log(n) time complexity.
+
+int a[1000001];  //initial array
+int f[1000001];  //fenwick tree
+int pre[100001]; //prefix sum array 
+int n;
+void build()
+{
+    for(int i=0;i<n;i++)
+    {
+        if(i==0)
+        pre[i]=a[i];
+        else
+        pre[i]=a[i]+pre[i-1];
+    }
+    //using the prefix array we build the fenwick tree
+    f[0]=0;
+    for(int i=1;i<=n;i++)
+    {
+        if((i&(i-1))==0)
+        f[i]=pre[i-1];
+        else
+        f[i]=pre[i-1]-pre[(i&(i-1))-1]; //pre[right-1] - pre[left-1] where left = i&(i-1)
+        //if right index is i then left index = i&(i-1)
+    }
+}
+int sum(int r) //a[0] + a[1] + a[2] + ....a[r-1]
+{
+    //if the child is at index i,then its parent is at index i&(i-1) in the fenwick tree.
+    int x = r;
+    int res = 0;
+    while(x>0)
+    {
+        res +=f[x];
+         x = ((x)&(x-1));  
+         //child = x 
+         //parent of the above child = x&(x-1) we start from the right index and move up the tree for sum query
+    }
+    return res;
+}
+
+void increment(int i,int v) //a[i]+=v
+{
+    //we have to make the adjustments in each of the interval in which i index occures
+    int j=i;
+    while(j<n)
+    {
+        f[j+1]+=v;
+        j = j|(j+1);
+    }
+}
+
+
+
+int main()
+{
+    cin>>n;
+    for(int i=0;i<n;i++)
+    cin>>a[i];
+    
+    build();
+    for(int i=0;i<=n;i++)
+    cout<<f[i]<<" ";
+    cout<<endl;
+    cout<<"sum query before increment: "<<endl;
+    int l;
+    int r;
+    cin>>l>>r;
+    cout<<l<<" "<<r<<" "<<endl;
+    int ans = sum(r)-sum(l);
+    cout<<ans<<endl;
+    cout<<"after increment: "<<endl;
+    increment(3,7); //a[3]+=7
+    increment(4,3); //a[4]+=3
+    ans = sum(r)-sum(l);
+    cout<<ans<<endl;
+}
